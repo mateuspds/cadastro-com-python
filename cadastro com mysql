@@ -4,311 +4,377 @@
 #.CONSULTAR O MYSQL
 #.FAZER UM SISTEMA DE CADASTRO E LOGIN PARA PESSOA
 #USAR UMA BIBLIOTECA PARA GRÁFICOS 
+#front-end com tkinter
 #EXCLUIR DADOS DO MYSQL
 #ETC...
 
+from tkinter import *
+import pymysql
+from tkinter import messagebox
+from tkinter import ttk
 
+class AdminJanela():
 
+   def CadastrarProduto(self):
+      self.cadastrar = Tk()
+      self.cadastrar.title('Cadastro de Produtos')
+      self.cadastrar['bg'] = '#524f4f'
 
+      Label(self.cadastrar, text='Cadastre os produtos', bg='#524f4f', fg='white').grid(row=0, column=0, columnspan=4, padx=5, pady=5)
 
+      Label(self.cadastrar, text='Nome',  bg='#524f4f', fg='white').grid(row=1, column=0, columnspan=1, padx=5, pady=5)
+      self.nome = Entry(self.cadastrar)
+      self.nome.grid(row=1, column=1, columnspan=2, padx=5, pady=5)
 
+      Label(self.cadastrar, text='Ingredientes',  bg='#524f4f', fg='white').grid(row=2, column=0, columnspan=1, padx=5, pady=5)
+      self.ingredientes = Entry(self.cadastrar)
+      self.ingredientes.grid(row=2, column=1, columnspan=2, padx=5, pady=5)
 
+      Label(self.cadastrar, text='Grupo',  bg='#524f4f', fg='white').grid(row=3, column=0, columnspan=1, padx=5, pady=5)
+      self.grupo = Entry(self.cadastrar)
+      self.grupo.grid(row=3, column=1, columnspan=2, padx=5, pady=5)
 
-import matplotlib.pyplot as plt
-import pymysql.cursors
+      Label(self.cadastrar, text='PreÃ§o',  bg='#524f4f', fg='white').grid(row=4, column=0, columnspan=1, padx=5, pady=5)
+      self.preco = Entry(self.cadastrar)
+      self.preco.grid(row=4, columna=1, columnspan=2, padx=5, pady=5)
 
-#CONEXÃO COM BANCO DE DADOS
-conexao = pymysql.connect(
-    host='localhost',
-    user='root',
-    passwd='',
-    database='erp',
-    charset='utf8mb4',
-    cursorclass= pymysql.cursors.DictCursor
+      Button(self.cadastrar, text='Cadastrar', width=15, bg='gray', relief='flat', highlightbackground='#524f4f', command=self.CadastrarPodutoBackEnd).grid(row=5, column=0, padx=5, pady=5)
+      Button(self.cadastrar, text='Excluir', width=15, bg='gray', relief='flat', highlightbackground='#524f4f', command=self.RemoverCadastrosBackEnd).grid(row=5, column=1, padx=5, pady=5)
+      Button(self.cadastrar, text='Atualizar', width=15, bg='gray', relief='flat', highlightbackground='#524f4f', command=self.CadastrarPodutoBackEnd).grid(row=6, column=0, padx=5, pady=5)
+      Button(self.cadastrar, text='Limpar Produtos', width=15, bg='gray', relief='flat', highlightbackground='#524f4f', command=self.LimparCadastrosBackEnd).grid(row=6, column=1, padx=5, pady=5)
 
-    
-)
+      self.tree = ttk.Treeview(self.cadastrar, selectmode="browse", column=("column1", "column2", "column3", "column4"),
+                               show='headings')
 
-autentico = False
+      self.tree.column("column1", width=200, minwidth=500, stretch=NO)
+      self.tree.heading('#1', text='Nome')
 
-def logarcadastrar():
-#NESSA PARTE DA FUNÇÃO LOGAR CADASTRAR DEPEDENDO DA OPÇÃO DO  USUÁRIO O SISTEMA VERIFICA SE BATE O DADOS CONSULTANDO O MYSQL
+      self.tree.column("column2", width=400, minwidth=500, stretch=NO)
+      self.tree.heading('#2', text='Ingredientes')
 
+      self.tree.column("column3", width=200, minwidth=500, stretch=NO)
+      self.tree.heading('#3', text='Grupo')
 
+      self.tree.column("column4", width=60, minwidth=500, stretch=NO)
+      self.tree.heading('#4', text='Preco')
 
-    usuarioexistente=0
-    autenticado= False
-    usuariomaster= False
+      self.tree.grid(row=0, column=4, padx=10, pady=10, columnspan=3, rowspan=6)
 
-    if decisao == 1:
-        nome=input('digite o nome\n')
-        senha= input('digite a senha\n')
+      self.MostrarProdutosBackEnd()
 
-        #percorrer o banco de daddos para conferir o nome e a senha
-        for linha in resultado:
-            if nome == linha['nome'] and senha == linha['senha']:
-                if linha['nivel'] ==1:
-                    usuariomaster= False
-                elif linha['nivel']==2:
-                    usuariomaster= True
-                autenticado = True
-                print('logado')
-                break
-            else:
-                autenticado= False
-        if not autenticado:
-            print('nome ou senha errado')
+      self.cadastrar.mainloop()
 
+   def __init__(self):
+      self.root = Tk()
+      self.root.title('ADMIN')
 
-    elif decisao == 2:
-         nome= input("digite o nome\n")
-         senha= input('digite a senha\n')
-         for linha in resultado:
-            if nome == linha['nome'] and senha == linha['senha']:
-                usuarioexistente = 1
+      Button(self.root, text= 'Pedidos', width=20, bg='#2E4682').grid(row=0, column=0, padx=10, pady=10)
+      Button(self.root, text='Cadastros', width=20, bg='#485A88', command=self.CadastrarProduto).grid(row=1, column=0, padx=10, pady=10)
 
-         if usuarioexistente==1:
-            print("nome e senha já caadastrado")
-        
-         elif usuarioexistente == 0:
-            try:
-                with conexao.cursor() as cursor:
-                    cursor.execute('insert into cadastros(nome,senha,nivel) values (%s,%s,%s)', (nome,senha,1))
-                    conexao.commit()
-                print('usuario cadastrado com sucesso')
+      self.root.mainloop()
 
-            except:
-                print('erro ao inserir no banco de dados, tente novamente')
+   def MostrarProdutosBackEnd(self):
 
-    return autenticado, usuariomaster
-def cadastarprodutos():
-#AQUI JÁ É A PARTE DE CADASTRAR UM PRODUTO E O SISTEMA INSERI AO BANCO DE DADOS
-    nome=input('digite o nome do produto')
-    ingrediente=input('digite os ingredientes do produto')
-    grupo=input('digite a que grupo pertence')
-    preco=(input('digite o preço'))
+      try:
+          conexao = pymysql.connect(
+             host='localhost',
+             user='root',
+             password='',
+             db='erp',
+             charset='utf8mb4',
+             cursorclass = pymysql.cursors.DictCursor
 
-    try:
-        with conexao.cursor() as cursor:
-            cursor.execute('insert into produtos(nome, ingredientes,grupo,preco) values (%s,%s,%s,%s)', (nome,ingrediente,grupo,preco))
+          )
+      except:
+          print('erro ao conectar ao banco de dados')
+
+      try:
+         with conexao.cursor() as cursor:
+            cursor.execute('select * from produtos')
+            resultados = cursor.fetchall()
+      except:
+         print('erro ao fazer a consulta')
+
+      self.tree.delete(*self.tree.get_children())
+
+      linhaV = []
+
+      for linha in resultados:
+         linhaV.append(linha['nome'])
+         linhaV.append(linha['ingredientes'])
+         linhaV.append(linha['grupo'])
+         linhaV.append(linha['preco'])
+
+         self.tree.insert("", END, values=linhaV, iid=linha['id'], tag='1')
+
+         linhaV.clear()
+
+   def CadastrarPodutoBackEnd(self):
+      nome = self.nome.get()
+      ingredientes = self.ingredientes.get()
+      grupo = self.grupo.get()
+      preco = self.preco.get()
+
+      try:
+          conexao = pymysql.connect(
+             host='localhost',
+             user='root',
+             password='',
+             db='erp',
+             charset='utf8mb4',
+             cursorclass = pymysql.cursors.DictCursor
+
+          )
+      except:
+          print('erro ao conectar ao banco de dados')
+
+      try:
+         with conexao.cursor() as cursor:
+            cursor.execute('insert into produtos(nome, ingredientes, grupo, preco) values (%s, %s, %s, %s)', (nome, ingredientes, grupo, preco))
             conexao.commit()
-            print('produto cadastrado')
-    except:
-        print('erro ao inserir os produtos no banco de dados')
-def listarprodutos():
-# AQUI ELE JÁ LISTA OS PRODUTOS DENTRO DE UMA LISTA, ELE CONSULTA O BANCO DE DADOS E SE TIVER PRODUTOS, ELE MANDA PARA UMA LISTA PARA MOSTRAR NA TELA DE UMA FORMA MAIS ORGANIZADA
-    produtos = []
+      except:
+         print('erro ao fazer a consulta')
 
-    try:
-        with conexao.cursor() as cursor:
-            cursor.execute('select * from produtos')
-            produtoscadastrados = cursor.fetchall()
-            print(produtoscadastrados)
+      self.MostrarProdutosBackEnd()
 
-    except:
-        print('erro ao conectar ao banco de dados')
+   def RemoverCadastrosBackEnd(self):
+      idDeletar = int(self.tree.selection()[0])
 
-    #percorrer os produtos e listar de uma forma organizada
-    for i in produtoscadastrados:
-        produtos.append(i)
+      try:
+          conexao = pymysql.connect(
 
-    if len(produtos) !=0:
-        for i in range(0, len(produtos)):
-            print(produtos[i])
-    else:
-        print('nenhum produto cadstrado')
-def excluirproduto():
-#NESSA PARTE O PROGRAMA EXCLUI O PRODUTO DE ACORDO COM SEU ID
-    excluir= int(input('digite o nome do id do produto'))
 
-    try:
-        with conexao.cursor() as cursor:
-            cursor.execute('delete from produtos where id = {}'.format(excluir))    
-            print('produto exluido com sucesso')
-    except:
-        print('erro ao excluir o produto')
-def listarpedidos():
-#AQUI PENSAMENTO EM UMA LANCHONETE, ELE MOSTRA OS PEDIDOS E ATUALIZA SER O PEDIDO JA FOI ENTREGUE
-    pedidos = []
-    decisao =0
+             host='localhost',
+             user='root',
+             password='',
+             db='erp',
+             charset='utf8mb4',
+             cursorclass = pymysql.cursors.DictCursor
 
-    while decisao !=2:
-        pedidos.clear()
+          )
+      except:
+          print('erro ao conectar ao banco de dados')
 
-        try:
+      try:
+         with conexao.cursor() as cursor:
+            cursor.execute('delete from produtos where id = {}'.format(idDeletar))
+            conexao.commit()
+      except:
+         print('erro ao fazer a consulta')
+
+      self.MostrarProdutosBackEnd()
+
+   def LimparCadastrosBackEnd(self):
+      if messagebox.askokcancel('Limpar dados CUIDADO!!', 'DESEJA EXCLUIR TODOS OS DADOS DA TABELA ? NAO HÃ VOLTA'):
+
+         try:
+            conexao = pymysql.connect(
+
+               host='localhost',
+               user='root',
+               password='',
+               db='erp',
+               charset='utf8mb4',
+               cursorclass=pymysql.cursors.DictCursor
+
+            )
+         except:
+            print('erro ao conectar ao banco de dados')
+
+         try:
             with conexao.cursor() as cursor:
-                cursor.execute('select * from pedidos')
-                listarpedidos = cursor.fetchall()
+               cursor.execute('truncate table produtos;')
+               conexao.commit()
+         except:
+            print('erro ao fazer a consulta')
 
-        except:
-            print('erro ao conectar ao bd')
-
-
-        for i in listarpedidos:
-            pedidos.append(i)
-
-        if len(pedidos) !=0:
-            for i in range(0, len(pedidos)):
-                print(pedidos[i])
-        else:
-            print('nenhum pedido foi feito')
-
-        decisao = int(input('digite 1 para dar produto com entregue e 2 para voltar'))
-        if decisao ==1:
-           iddeletar = int(input('digite o id do produto entregue'))
-           try:
-               with conexao.cursor() as cursor:
-                   cursor.execute('delete  from pedidos where id = {} '.format(iddeletar))
-                   print('produto dado como entregue')
-                
-           except:
-                print('erro ao apagar o pedido')
-def gerandoestatiticas():
-    nomeProdutos = []
-    nomeProdutos.clear()
-
-    try:
-        with conexao.cursor() as cursor:
-            cursor.execute('select * from produtos')
-            produtos = cursor.fetchall()
-    except:
-        print('erro ao fazer consulta no banco de dados')
-
-    try:
-        with conexao.cursor() as cursor:
-            cursor.execute('select * from estatisticaVendido')
-            vendido = cursor.fetchall()
-    except:
-        print('erro ao fazer a consulta no banco de dados')
+         self.MostrarProdutosBackEnd()
 
 
-    estado = int(input('digite 0 para sair, 1 para pesquisar por nome e 2 para pesquisar por grupo'))
+class JanelaLogin():
 
-    if estado == 1:
-        decisao3 = int(input('digite 1 para pesquisar por dinheiro e 2 por quantidade unitaria'))
-        if decisao3 == 1:
+   def VerificaLogin(self):
+      autenticado = False
+      usuarioMaster = False
 
-            for i in produtos:
-                nomeProdutos.append(i['nome'])
-
-            valores = []
-            valores.clear()
-
-            for h in range(0, len(nomeProdutos)):
-                somaValor = -1
-                for i in vendido:
-                    if i['nome'] == nomeProdutos[h]:
-                        somaValor += i['preco']
-                if somaValor == -1:
-                    valores.append(0)
-                elif somaValor > 0:
-                    valores.append(somaValor+1)
-
-            plt.plot(nomeProdutos, valores)
-            plt.ylabel('quantidade vendida em reais')
-            plt.xlabel('produtos')
-            plt.show()
-
-        if decisao3 == 2:
-            grupounico = []
-            grupounico.clear()
-
-            try:
-                with conexao.cursor() as cursor:
-                    cursor.execute('select * from produtos')
-                    grupo= cursor.fetchall()
-
-            except:
-                print('erro ao cadastrar ao banco de dados 1')
-
-            try:
-                with conexao.cursor() as cursor:
-                    cursor.execute('select  * from  estatisticaVendido')
-                    vendidogrupo = cursor.fetchall()
-            except:
-                print('erro ao consultar a bd 2')
-
-            for i in grupo:
-                grupounico.append(i['nome'])
-#NESSA FUNÇÃO ELE GERA ESTATITICA DE ACORDO COM AS VENDAS DOS PRODUTOS, SEJA DE VALOR MONÉTARIO OU DE UNITÁRIO
-#aqui é para que o produto nao se repita na tela...
-            grupounico=sorted(set(grupounico))
-
-            quantfinal = []
-            quantfinal.clear()
-
-            for h in range(0, len(grupounico)):
-                quantunitaria = 0
-                for i in vendidogrupo:
-                     if grupounico[h] == i['nome']:
-                        quantunitaria +=1
-                quantfinal.append(quantunitaria)
-
-            plt.plot(grupounico, quantfinal)
-            plt.ylabel('quantidade vendida unitaria')
-            plt.xlabel('produtos')
-            plt.show()
-    
-    elif estado  ==2:
-        decisao3 = int(input('digite 1 para pesquisar por dinheiro e 2 por quantidade unitaria'))
-        if decisao3 == 1:
-
-            for i in produtos:
-                nomeProdutos.append(i['grupo'])
-
-            valores = []
-            valores.clear()
-
-            for h in range(0, len(nomeProdutos)):
-                somaValor = -1
-                for i in vendido:
-                    if i['grupo'] == nomeProdutos[h]:
-                        somaValor += i['preco']
-                if somaValor == -1:
-                    valores.append(0)
-                elif somaValor > 0:
-                    valores.append(somaValor + 1)
-
-            plt.plot(nomeProdutos, valores)
-            plt.ylabel('quantidade vendida em reais')
-            plt.xlabel('produtos')
-            plt.show()
+      try:
+          conexao = pymysql.connect(
 
 
+             host='localhost',
+             user='root',
+             password='',
+             db='erp',
+             charset='utf8mb4',
+             cursorclass = pymysql.cursors.DictCursor
 
+          )
+      except:
+          print('erro ao conectar ao banco de dados')
 
-#corpo da estrutura aonde fica repedindo a pergunta:
-while not autentico:
-    decisao = int(input('digite 1 para logar e 2 para cadastrar\n'))
+      usuario = self.login.get()
+      senha = self.senha.get()
 
-    try:
-        with conexao.cursor() as cursor:
+      try:
+         with conexao.cursor() as cursor:
             cursor.execute('select * from cadastros')
-            resultado= cursor.fetchall()
-            
-    except:
-        print("erro ao conectar ao bd")
-    autentico,usuariosupremo = logarcadastrar()
+            resultados = cursor.fetchall()
+      except:
+         print('erro ao fazer a consulta')
+
+      for linha in resultados:
+         if usuario == linha['nome'] and senha == linha['senha']:
+            if linha['nivel'] == 1:
+               usuarioMaster = False
+            elif linha['nivel'] == 2:
+               usuarioMaster = True
+            autenticado = True
+            break
+         else:
+            autenticado = False
+
+      if not autenticado:
+         messagebox.showinfo('login', 'Email ou senha invalido')
+
+      if autenticado:
+         self.root.destroy()
+         if usuarioMaster:
+            AdminJanela()
+
+   def CadastroBackEnd(self):
+      codigoPadrao = '123@h'
+
+      if self.codigoSegurança.get() == codigoPadrao:
+         if len(self.login.get()) <=20:
+            if len(self.senha.get()) <=50:
+               nome = self.login.get()
+
+               senha = self.senha.get()
+
+               try:
+                  conexao = pymysql.connect(
+
+                     host='localhost',
+                     user='root',
+                     password='',
+                     db='erp',
+                     charset='utf8mb4',
+                     cursorclass=pymysql.cursors.DictCursor
+
+                  )
+               except:
+                  print('erro ao conectar ao banco de dados')
+
+               try:
+                  with conexao.cursor() as cursor:
+                     cursor.execute('insert into cadastros (nome, senha, nivel) values (%s, %s, %s)', (nome, senha, 1))
+                     conexao.commit()
+                  messagebox.showinfo('Cadastro', 'Usuario cadastrado com sucesso')
+                  self.root.destroy()
+               except:
+                  print('erro ao inserir dados')
+            else:
+               messagebox.showinfo('ERRO', 'Por favor insira um senha com 50 ou menos caracteres')
+         else:
+            messagebox.showinfo('ERRO', 'Por favor insira um nome com 20 ou menos caracteres')
+      else:
+         messagebox.showinfo('ERRO', 'Erro no codigo de seguranÃ§a')
+
+   def Cadastro(self):
+      Label(self.root, text='Chave de seguranÃ§a').grid(row=3, column=0, pady=5, padx=5)
+      self.codigoSegurança = Entry(self.root, show='*')
+      self.codigoSegurança.grid(row=3, column=1, pady=5, padx=10)
+      Button(self.root, text='Confirmar cadastro', width=15, bg='blue1', command=self.CadastroBackEnd).grid(row=4, column=0, columnspan=3, pady=5, padx=10)
+
+   def UpdateBackEnd(self):
+      try:
+          conexao = pymysql.connect(
 
 
-if autentico:
-    print('autenticado')
-    decisaousuario = 1
+             host='localhost',
+             user='root',
+             password='',
+             db='erp',
+             charset='utf8mb4',
+             cursorclass = pymysql.cursors.DictCursor
 
-    if usuariosupremo == True:
-    
-        while decisaousuario != 0:
-             decisaousuario=int(input('digite 0 para sair e 1 para cadastrar o produto e 2 para  listar produtos e 3 para listra  pedidos e 4 para gerar estátitica'))
+          )
+      except:
+          print('erro ao conectar ao banco de dados')
 
-             if decisaousuario ==1:
-                cadastarprodutos()
-             if decisaousuario ==2:
-                 listarprodutos()
-                 delete= int(input('digite 1 para sair e 2 para exluir o produto novamente'))
-                 if delete == 2:
-                    excluirproduto()
-             elif decisaousuario == 3:
-                  listarpedidos()
 
-             elif decisaousuario ==4:
-                gerandoestatiticas()
+      try:
+         with conexao.cursor() as cursor:
+            cursor.execute('select * from cadastros')
+            resultados = cursor.fetchall()
+      except:
+         print('erro ao fazer a consulta')
+
+      self.tree.delete(*self.tree.get_children())
+
+      linhaV = []
+
+      for linha in resultados:
+         linhaV.append(linha['id'])
+         linhaV.append(linha['nome'])
+         linhaV.append(linha['senha'])
+         linhaV.append(linha['nivel'])
+
+
+         self.tree.insert("", END, values=linhaV, iid=linha['id'], tag='1')
+
+         linhaV.clear()
+
+
+   def VisualizarCadastros(self):
+      self.vc = Toplevel()
+      self.vc.resizable(False, False)
+      self.vc.title('Visualizar cadastros')
+
+      self.tree = ttk.Treeview(self.vc, selectmode="browse", column=("column1", "column2", "column3", "column4"), show='headings')
+
+      self.tree.column("column1", width=40, minwidth=500, stretch=NO)
+      self.tree.heading('#1', text='ID')
+
+      self.tree.column("column2", width=100, minwidth=500, stretch=NO)
+      self.tree.heading('#2', text='Usuario')
+
+      self.tree.column("column3", width=100, minwidth=500, stretch=NO)
+      self.tree.heading('#3', text='Senha')
+
+      self.tree.column("column4", width=40, minwidth=500, stretch=NO)
+      self.tree.heading('#4', text='Nivel')
+
+      self.tree.grid(row=0, column=0, padx=10, pady=10)
+
+      self.UpdateBackEnd()
+
+      self.vc.mainloop()
+
+
+
+   def __init__(self):
+      self.root = Tk()
+      self.root.title('Login')
+      Label(self.root, text='Faça o login').grid(row=0, column=0, columnspan=2)
+
+      Label(self.root, text='Usuario').grid(row=1, column=0)
+
+      self.login = Entry(self.root)
+      self.login.grid(row=1, column=1, padx=5, pady=5)
+
+      Label(self.root, text='Senha').grid(row=2, column=0)
+
+      self.senha = Entry(self.root, show='*')
+      self.senha.grid(row=2, column=1, padx=5, pady=5)
+
+      Button(self.root, text='login', bg='green3', width=10, command=self.VerificaLogin).grid(row=5, column=0, padx=5, pady=5)
+
+      Button(self.root, text='cadastrar', bg='orange3', width=10, command=self.Cadastro).grid(row=5, column=1, padx=5, pady=5)
+
+      Button(self.root, text='Visualizar cadastros', bg='white', command=self.VisualizarCadastros).grid(row=6, column=0, columnspan=2, padx=5, pady=5)
+
+      self.root.mainloop()
+
+
+JanelaLogin()
